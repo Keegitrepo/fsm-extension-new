@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="extensionStyles.css">
+    <title>FSM Extension</title>
+</head>
+<body>
+    <div>
+        <h3 id="greet">Hello FSM</h3>
+        <div class="navbar" id="nav">
+            <!-- Add the timer symbol from Font Awesome -->
+            <a href="#" id="timeLink">Timer</a>
+        </div>
+        <div class="alignCenter" id="activitiesSection">
+            <h1 class="headingCommon emergencyColor">Emergency</h1>
+            <ul class="list" id="emergencyList">
+            </ul>
+    
+            <h1 class="headingCommon sameDayColor">Same Day</h1>
+            <ul class="list" id="sameDayList">
+            </ul>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/fsm-shell"></script>
+    <script src="loadDataAndUI.js"></script>
+    <script src="utils.js"></script>
+    <script>
+        isInsideShell(FSMShell);
+    </script>
+
+</body>
+</html>

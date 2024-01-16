@@ -1,0 +1,7 @@
+{
+    "name": "Notifications",
+    "provider": "EvoraIT",
+    "description": "Get the activities for emergency and same day at certail intervals of time and navigate to map",   
+    "version": "1.0.0", 
+    "icon": ""
+}
