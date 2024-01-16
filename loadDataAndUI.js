@@ -2,20 +2,6 @@
 const emergencyList = document.getElementById('emergencyList');
 const sameDayList = document.getElementById('sameDayList');
 
-// Add click event listeners to the lists
-emergencyList.addEventListener('click', handleItemClick);
-sameDayList.addEventListener('click', handleItemClick);
-
-function handleItemClick(event) {
-    // Check if the clicked element is an anchor
-    if (event.target.tagName === 'A') {
-        // Get the href attribute of the clicked anchor
-        const clickedItem = event.target.getAttribute('href');
-        alert(`Pressed item: ${clickedItem}`);
-    }
-}
-
-
 // // Function to add items to the list
 function addItemToList(listId, link, text, associatedObject={}) {
     const list = document.getElementById(listId);
@@ -45,14 +31,18 @@ function addItemToList(listId, link, text, associatedObject={}) {
 function createMapUrlAndAddItemToList(listId, responseData, cloudHost) {
     if (responseData && responseData.data && responseData.data.length) {
         let paramsArray = responseData.data.forEach((dataObj) => {
-            let {act, scall, add} = dataObj;
-            // URL to make - https://us.coresystems.net/shell/#/planning-dispatching/map/date/latitude,longitude/activities/activityId
-            let {latitude, longitude} = add.location ? add.location : {latitude: 0, longitude: 0}; // if there's no lat and long data, we're defauilting to 0 & 0 so as to avoid the failure case
-            let {id: activityId, createDateTime, code} = act;
-            let mapDate = createDateTime ? createDateTime.substring(0, 10) : new Date().toISOString().substring(0, 10);
-            let mapUrlForCurrentActivity = `https://us.coresystems.net/shell/#/planning-dispatching/map/${mapDate}/${latitude},${longitude}/activities/${activityId}`;
-            let itemText = `${code} - Map`;
-            addItemToList(listId, mapUrlForCurrentActivity, itemText);
+            try {
+                let {act, scall, add} = dataObj;
+                // URL to make - https://us.coresystems.net/shell/#/planning-dispatching/map/date/latitude,longitude/activities/activityId
+                let {latitude, longitude} = add.location ? add.location : {latitude: 0, longitude: 0}; // if there's no lat and long data, we're defauilting to 0 & 0 so as to avoid the failure case
+                let {id: activityId, createDateTime, code} = act;
+                let mapDate = createDateTime ? createDateTime.substring(0, 10) : new Date().toISOString().substring(0, 10);
+                let mapUrlForCurrentActivity = `https://us.coresystems.net/shell/#/planning-dispatching/map/${mapDate}/${latitude},${longitude}/activities/${activityId}`;
+                let itemText = `${code} - Map`;
+                addItemToList(listId, mapUrlForCurrentActivity, itemText);
+            } catch (error) {
+                let err;
+            }
         })
     }
 }
@@ -118,10 +108,12 @@ function onTimeClick() {
     }
 }
 
-function onTimerSave() {
+async function onTimerSave() {
     document.getElementById('timerId').style.display = 'none';
     enableControls();
     // Here we've to fetch the data with the previousInputValue as the timer
+    await fetchData('emergencyList', globalCompanyObject);
+    await fetchData('sameDayList', globalCompanyObject);
 }
 
 function onTimerCancel() {

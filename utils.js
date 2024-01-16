@@ -1,3 +1,4 @@
+var globalCompanyObject;
 function updateWarning(text) {
     document.getElementById("greet").innerHTML = text
 }
@@ -23,24 +24,19 @@ function isInsideShell(FSMShell) {
         shellSdk.on(SHELL_EVENTS.Version1.REQUIRE_CONTEXT, (event) => {
             const {
                 // extract required context from event content
-                cloudHost,
-                account,
-                company,
-                user,
-                auth,
-                accountId,
-                companyId
+                auth
             } = JSON.parse(event);
+            globalCompanyObject = JSON.parse(event);
 
             // Access_token has a short life stpan and needs to be refreshed before expiring
             // Each extension need to implement its own strategy to fresh it.
-            initializeRefreshTokenStrategy(shellSdk, auth, JSON.parse(event));
+            initializeRefreshTokenStrategy(shellSdk, SHELL_EVENTS, auth, JSON.parse(event));
         });
     }
 }
 
 // Loop before a token expire to fetch a new one
-async function initializeRefreshTokenStrategy(shellSdk, auth, comapnyObject) {
+async function initializeRefreshTokenStrategy(shellSdk, SHELL_EVENTS, auth, comapnyObject) {
     shellSdk.on(SHELL_EVENTS.Version1.REQUIRE_AUTHENTICATION, (event) => {
         sessionStorage.setItem('token', event.access_token);
         setTimeout(() => fetchToken(), (event.expires_in * 1000) - 10000);
@@ -61,10 +57,11 @@ async function initializeRefreshTokenStrategy(shellSdk, auth, comapnyObject) {
 
 async function fetchData(listId, comapnyObject) {
     // Next call for loading the data asynchronously time to time
-    let loadDataTimePeriod = Number(document.getElementById("inputId").value) * 60 * 1000; // time in milli seconds i.e 1min * 60sec * 1000ms
-    setTimeout((comapnyObject) => {
-        fetchData(comapnyObject);
-    }, loadDataTimePeriod, comapnyObject);
+    let inputValue = document.getElementById("inputId") ? document.getElementById("inputId").value : 10; // i.e default value
+    let loadDataTimePeriod = Number(inputValue) * 60 * 1000; // time in milli seconds i.e 1min * 60sec * 1000ms
+    setTimeout((listId, comapnyObject) => {
+        fetchData(listId, comapnyObject);
+    }, loadDataTimePeriod, listId, comapnyObject);
 
     const { cloudHost, account, company, accountId, companyId } = comapnyObject; // extract required context from event content
 
