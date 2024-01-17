@@ -112,8 +112,8 @@ async function onTimerSave() {
     document.getElementById('timerId').style.display = 'none';
     enableControls();
     // Here we've to fetch the data with the previousInputValue as the timer
-    await fetchData('emergencyList', globalCompanyObject);
-    await fetchData('sameDayList', globalCompanyObject);
+    await fetchData('emergencyList', globalCompanyObject, { "query": "select act.id, act.createDateTime, act.code, scall.code, scall.subject, add.location, add.location from ServiceCall scall INNER JOIN Activity act ON act.object.objectId = scall.id INNER JOIN Address add ON add.id = act.address WHERE scall.priority = 'HIGH' AND scall.typeCode = 'GEMR' AND act.status = 'DRAFT' AND act.executionStage = 'DISPATCHING'"});
+    await fetchData('sameDayList', globalCompanyObject, { "query": "select act.id, act.createDateTime, act.code, scall.code, scall.subject, add.location, add.location from ServiceCall scall INNER JOIN Activity act ON act.object.objectId = scall.id INNER JOIN Address add ON add.id = act.address WHERE scall.priority = 'HIGH' AND scall.typeCode != 'GEMR' AND act.status = 'DRAFT' AND act.executionStage = 'DISPATCHING'"});
 }
 
 function onTimerCancel() {

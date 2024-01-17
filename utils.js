@@ -51,11 +51,11 @@ async function initializeRefreshTokenStrategy(shellSdk, SHELL_EVENTS, auth, coma
     sessionStorage.setItem('token', auth.access_token);
     setTimeout(() => fetchToken(), (auth.expires_in * 1000) - 10000);
 
-    await fetchData('emergencyList', comapnyObject); // For Emergency orders
-    await fetchData('sameDayList', comapnyObject); // For Same day orders
+    await fetchData('emergencyList', comapnyObject, { "query": "select act.id, act.createDateTime, act.code, scall.code, scall.subject, add.location, add.location from ServiceCall scall INNER JOIN Activity act ON act.object.objectId = scall.id INNER JOIN Address add ON add.id = act.address WHERE scall.priority = 'HIGH' AND scall.typeCode = 'GEMR' AND act.status = 'DRAFT' AND act.executionStage = 'DISPATCHING'"}); // For Emergency orders
+    await fetchData('sameDayList', comapnyObject, { "query": "select act.id, act.createDateTime, act.code, scall.code, scall.subject, add.location, add.location from ServiceCall scall INNER JOIN Activity act ON act.object.objectId = scall.id INNER JOIN Address add ON add.id = act.address WHERE scall.priority = 'HIGH' AND scall.typeCode != 'GEMR' AND act.status = 'DRAFT' AND act.executionStage = 'DISPATCHING'"}); // For Same day orders
 }
 
-async function fetchData(listId, comapnyObject) {
+async function fetchData(listId, comapnyObject, queryObj) {
     // Next call for loading the data asynchronously time to time
     let inputValue = document.getElementById("inputId") ? document.getElementById("inputId").value : 10; // i.e default value
     let loadDataTimePeriod = Number(inputValue) * 60 * 1000; // time in milli seconds i.e 1min * 60sec * 1000ms
@@ -74,7 +74,7 @@ async function fetchData(listId, comapnyObject) {
         "X-Company-ID": companyId
     };
     let url = `https://${cloudHost}/api/query/v1?account=${account}&company=${company}&dtos=Activity.43;ServiceCall.27;Address.22`
-    let body = JSON.stringify({ "query": "SELECT act, scall, add FROM Activity act JOIN ServiceCall scall ON scall.id = act.object.objectId JOIN Address add ON add.id = act.address"});
+    let body = JSON.stringify(queryObj);
     let method = 'POST';
 
     try {
