@@ -38,7 +38,7 @@ function createMapUrlAndAddItemToList(listId, responseData, cloudHost) {
                 let {id: activityId, code} = act;
                 let mapDate = new Date().toISOString().substring(0, 10);
                 let mapUrlForCurrentActivity = `https://us.coresystems.net/shell/#/planning-dispatching/map/${mapDate}/${latitude},${longitude},z11/activities/${activityId}`;
-                let itemText = `${code} - Map`;
+                let itemText = `${scall.code} - Map`;
                 addItemToList(listId, mapUrlForCurrentActivity, itemText);
             } catch (error) {
                 let err;
