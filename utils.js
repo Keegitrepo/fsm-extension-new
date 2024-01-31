@@ -1,4 +1,5 @@
 var globalCompanyObject;
+var shellReferenceObject = {};
 function updateWarning(text) {
     document.getElementById("greet").innerHTML = text
 }
@@ -30,6 +31,10 @@ function isInsideShell(FSMShell) {
 
             // Access_token has a short life stpan and needs to be refreshed before expiring
             // Each extension need to implement its own strategy to fresh it.
+            shellReferenceObject["shellSdk"] = shellSdk;
+            shellReferenceObject["SHELL_EVENTS"] = SHELL_EVENTS;
+            shellReferenceObject["auth"] = auth;
+            shellReferenceObject["jsonEvent"] = JSON.parse(event);
             initializeRefreshTokenStrategy(shellSdk, SHELL_EVENTS, auth, JSON.parse(event));
         });
     }
@@ -59,9 +64,10 @@ async function fetchData(listId, comapnyObject, queryObj) {
     // Next call for loading the data asynchronously time to time
     let inputValue = document.getElementById("inputId") ? document.getElementById("inputId").value : 10; // i.e default value
     let loadDataTimePeriod = Number(inputValue) * 60 * 1000; // time in milli seconds i.e 1min * 60sec * 1000ms
-    setTimeout((listId, comapnyObject) => {
+    let id = setTimeout((listId, comapnyObject) => {
         fetchData(listId, comapnyObject);
     }, loadDataTimePeriod, listId, comapnyObject);
+    shellReferenceObject.listId = id;
 
     const { cloudHost, account, company, accountId, companyId } = comapnyObject; // extract required context from event content
 
@@ -84,9 +90,22 @@ async function fetchData(listId, comapnyObject, queryObj) {
             body: body
         });
         let jsonResponse = await response.json();
+        document.getElementById(listId).innerHTML = '';
         createMapUrlAndAddItemToList(listId, jsonResponse, cloudHost);
         return true
     } catch (error) {
-        return alert(`Failed to fetch the data due to ${error} \n Reload the page manually`);
+        document.getElementById(listId).innerHTML = '';
+        clearTimeout(shellReferenceObject[listId]);
+
+        shellSdk.emit(shellReferenceObject["SHELL_EVENTS"].Version1.REQUIRE_AUTHENTICATION, {
+            response_type: 'token'  // request a user token within the context
+        });
+
+        shellSdk.on(shellReferenceObject["SHELL_EVENTS"].Version1.REQUIRE_AUTHENTICATION, (event) => {
+            sessionStorage.setItem('token', event.access_token);
+        });
+
+        await fetchData('emergencyList', comapnyObject, { "query": "select act.id, act.createDateTime, act.code, scall.code, scall.subject, add.location, add.location from ServiceCall scall INNER JOIN Activity act ON act.object.objectId = scall.id INNER JOIN Address add ON add.id = act.address WHERE scall.priority = 'HIGH' AND scall.typeCode = 'GEMR' AND act.status = 'DRAFT' AND act.executionStage = 'DISPATCHING'"}); // For Emergency orders
+        await fetchData('sameDayList', comapnyObject, { "query": "select act.id, act.createDateTime, act.code, scall.code, scall.subject, add.location, add.location from ServiceCall scall INNER JOIN Activity act ON act.object.objectId = scall.id INNER JOIN Address add ON add.id = act.address WHERE scall.priority = 'HIGH' AND scall.typeCode != 'GEMR' AND act.status = 'DRAFT' AND act.executionStage = 'DISPATCHING'"}); // For Same day orders
     }
 }
