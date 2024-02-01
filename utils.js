@@ -67,7 +67,7 @@ async function fetchData(listId, comapnyObject, queryObj) {
     let id = setTimeout((listId, comapnyObject) => {
         fetchData(listId, comapnyObject);
     }, loadDataTimePeriod, listId, comapnyObject);
-    shellReferenceObject.listId = id;
+    shellReferenceObject[`${listId}`] = id;
 
     const { cloudHost, account, company, accountId, companyId } = comapnyObject; // extract required context from event content
 
@@ -89,23 +89,26 @@ async function fetchData(listId, comapnyObject, queryObj) {
             headers: header,
             body: body
         });
+        if (!response.ok) {throw false};
+        
         let jsonResponse = await response.json();
         document.getElementById(listId).innerHTML = '';
         createMapUrlAndAddItemToList(listId, jsonResponse, cloudHost);
         return true
     } catch (error) {
         document.getElementById(listId).innerHTML = '';
-        clearTimeout(shellReferenceObject[listId]);
+        clearTimeout(shellReferenceObject['emergencyList']);
+        clearTimeout(shellReferenceObject['sameDayList']);
 
         shellSdk.emit(shellReferenceObject["SHELL_EVENTS"].Version1.REQUIRE_AUTHENTICATION, {
             response_type: 'token'  // request a user token within the context
         });
 
-        shellSdk.on(shellReferenceObject["SHELL_EVENTS"].Version1.REQUIRE_AUTHENTICATION, (event) => {
+        shellSdk.on(shellReferenceObject["SHELL_EVENTS"].Version1.REQUIRE_AUTHENTICATION, async (event) => {
             sessionStorage.setItem('token', event.access_token);
+            await fetchData('emergencyList', comapnyObject, { "query": "select act.id, act.createDateTime, act.code, scall.code, scall.subject, add.location, add.location from ServiceCall scall INNER JOIN Activity act ON act.object.objectId = scall.id INNER JOIN Address add ON add.id = act.address WHERE scall.priority = 'HIGH' AND scall.typeCode = 'GEMR' AND act.status = 'DRAFT' AND act.executionStage = 'DISPATCHING'"}); // For Emergency orders
+            await fetchData('sameDayList', comapnyObject, { "query": "select act.id, act.createDateTime, act.code, scall.code, scall.subject, add.location, add.location from ServiceCall scall INNER JOIN Activity act ON act.object.objectId = scall.id INNER JOIN Address add ON add.id = act.address WHERE scall.priority = 'HIGH' AND scall.typeCode != 'GEMR' AND act.status = 'DRAFT' AND act.executionStage = 'DISPATCHING'"}); // For Same day orders
         });
 
-        await fetchData('emergencyList', comapnyObject, { "query": "select act.id, act.createDateTime, act.code, scall.code, scall.subject, add.location, add.location from ServiceCall scall INNER JOIN Activity act ON act.object.objectId = scall.id INNER JOIN Address add ON add.id = act.address WHERE scall.priority = 'HIGH' AND scall.typeCode = 'GEMR' AND act.status = 'DRAFT' AND act.executionStage = 'DISPATCHING'"}); // For Emergency orders
-        await fetchData('sameDayList', comapnyObject, { "query": "select act.id, act.createDateTime, act.code, scall.code, scall.subject, add.location, add.location from ServiceCall scall INNER JOIN Activity act ON act.object.objectId = scall.id INNER JOIN Address add ON add.id = act.address WHERE scall.priority = 'HIGH' AND scall.typeCode != 'GEMR' AND act.status = 'DRAFT' AND act.executionStage = 'DISPATCHING'"}); // For Same day orders
     }
 }
