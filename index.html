@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="extensionStyles.css">
     <title>FSM Extension</title>
 </head>
+
 <body>
     <div>
         <h3 id="greet"></h3>
@@ -17,7 +19,7 @@
             <h1 class="headingCommon emergencyColor">Emergency</h1>
             <ul class="list" id="emergencyList">
             </ul>
-    
+
             <h1 class="headingCommon sameDayColor">Same Day</h1>
             <ul class="list" id="sameDayList">
             </ul>
@@ -26,11 +28,16 @@
 
     <script src="https://unpkg.com/fsm-shell"></script>
     <script src="loadDataAndUI.js"></script>
+    <!-- Moment.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <!-- Moment-Timezone -->
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.36/moment-timezone-with-data.min.js"></script>
     <script src="utils.js"></script>
     <script>
         isInsideShell(FSMShell);
     </script>
 
 </body>
+
 </html>
