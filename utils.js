@@ -59,7 +59,7 @@ async function initializeRefreshTokenStrategy(shellSdk, SHELL_EVENTS, auth, coma
     await fetchData('emergencyList', comapnyObject, { "query": "select act.id, act.startDateTime, act.code, act.timeZoneId, scall.code, scall.subject, scall.createDateTime, add.location, eq.id as equipment_id from ServiceCall scall INNER JOIN Activity act ON act.object.objectId = scall.id INNER JOIN Address add ON add.id = act.address INNER JOIN Region rr ON rr.id = act.region INNER JOIN Equipment eq ON eq.id = act.equipment WHERE scall.priority = 'HIGH' AND scall.typeCode = 'GEMR' AND act.status = 'DRAFT' AND act.executionStage = 'DISPATCHING'"}); // For Emergency orders
     await fetchData('sameDayList', comapnyObject, { "query": "select act.id, act.createDateTime, act.code, scall.code, scall.subject, add.location, add.location from ServiceCall scall INNER JOIN Activity act ON act.object.objectId = scall.id INNER JOIN Address add ON add.id = act.address WHERE scall.priority = 'HIGH' AND scall.typeCode != 'GEMR' AND act.status = 'DRAFT' AND act.executionStage = 'DISPATCHING'"}); // For Same day orders
 }
-
+let previousEmergencyCount = 0;
 async function fetchData(listId, comapnyObject, queryObj) {
     // Next call for loading the data asynchronously time to time
     let inputValue = document.getElementById("inputId") ? document.getElementById("inputId").value : 10; // i.e default value
@@ -92,6 +92,10 @@ async function fetchData(listId, comapnyObject, queryObj) {
         if (!response.ok) {throw false};
 
         let jsonResponse = await response.json();
+        if (listId === 'emergencyList' && jsonResponse.data && jsonResponse.data.length > previousEmergencyCount){
+            alert(`New Emergency Orders Received: ${jsonResponse.data.length - previousEmergencyCount}`);
+        }
+        previousEmergencyCount = jsonResponse.data.length;
         document.getElementById(listId).innerHTML = '';
         createMapUrlAndAddItemToList(listId, jsonResponse, cloudHost);
         // if (listId === 'emergencyList' && jsonResponse.data && jsonResponse.data.length > 0){
