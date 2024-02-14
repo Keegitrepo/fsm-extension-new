@@ -92,10 +92,12 @@ async function fetchData(listId, comapnyObject, queryObj) {
         if (!response.ok) {throw false};
 
         let jsonResponse = await response.json();
-        if (listId === 'emergencyList' && jsonResponse.data && jsonResponse.data.length > previousEmergencyCount){
-            alert(`New Emergency Orders Received: ${jsonResponse.data.length - previousEmergencyCount}`);
-        }
-        previousEmergencyCount = jsonResponse.data.length;
+        
+        // if (listId === 'emergencyList' && jsonResponse.data && jsonResponse.data.length > previousEmergencyCount){
+        //     alert(`New Emergency Orders Received: ${jsonResponse.data.length - previousEmergencyCount}`);
+        // }
+        // previousEmergencyCount = jsonResponse.data.length;
+
         document.getElementById(listId).innerHTML = '';
         createMapUrlAndAddItemToList(listId, jsonResponse, cloudHost);
         // if (listId === 'emergencyList' && jsonResponse.data && jsonResponse.data.length > 0){
@@ -115,7 +117,7 @@ async function fetchData(listId, comapnyObject, queryObj) {
         //     // Dismiss alert after 2 seconds
         //     setTimeout(() => {
         //         alert.dismiss();
-        //     }, 2000);
+        //     }, 2000);              
         // }
         return true
     } catch (error) {
