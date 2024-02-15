@@ -93,22 +93,22 @@ async function fetchData(listId, comapnyObject, queryObj) {
 
         let jsonResponse = await response.json();
 
-        if (listId === 'emergencyList' && jsonResponse.data && jsonResponse.data.length > 0){
-            jsonResponse.data.forEach((dataObj) => {
-                let { scall, rr, act, equipment_id } = dataObj;
-                let premise = equipment_id ? "Dispatcher Area" : "Off-Premise";
+        // if (listId === 'emergencyList' && jsonResponse.data && jsonResponse.data.length > 0){
+        //     jsonResponse.data.forEach((dataObj) => {
+        //         let { scall, rr, act, equipment_id } = dataObj;
+        //         let premise = equipment_id ? "Dispatcher Area" : "Off-Premise";
                 
-                // Check if createDateTime is equal to startDateTime
-                if (startDateTime === currentDateTime && createDateTime === startDateTime) {
-                    alert(`New Emergency Received Service Order #${scall.code} ,Work Center: ${rr.code.substring(8)}, Premise: ${premise}`);
-                }
-            });
+        //         // Check if createDateTime is equal to startDateTime
+        //         if (startDateTime === currentDateTime && createDateTime === startDateTime) {
+        //             alert(`New Emergency Received Service Order #${scall.code} ,Work Center: ${rr.code.substring(8)}, Premise: ${premise}`);
+        //         }
+        //     });
         
-            // Dismiss alert after 2 seconds
-            setTimeout(() => {
-                alert.dismiss();
-            }, 2000);              
-        }
+        //     // Dismiss alert after 2 seconds
+        //     setTimeout(() => {
+        //         alert.dismiss();
+        //     }, 2000);              
+        // }
 
         document.getElementById(listId).innerHTML = '';
         createMapUrlAndAddItemToList(listId, jsonResponse, cloudHost);
