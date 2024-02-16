@@ -39,9 +39,8 @@ function isInsideShell(FSMShell) {
         });
     }
 }
-async function postUpdatedZZEMRALERTValue(ZZEMRALERTValue,comapnyObject) {
+async function postUpdatedZZEMRALERTValue(ZZEMRALERTValue,comapnyObject, query) {
     try {
-        // Construct the request body with the updated ZZEMRALERT value
         const { cloudHost, account, company, accountId, companyId } = comapnyObject;
         const header = {
             "Content-Type": "application/json",
@@ -52,7 +51,7 @@ async function postUpdatedZZEMRALERTValue(ZZEMRALERTValue,comapnyObject) {
             "X-Company-ID": companyId
         };
         let url = `https://${cloudHost}/api/query/v1?account=${account}&company=${company}&dtos=Activity.43;ServiceCall.27;Address.22;Region.9;Equipment.24`
-        let body = JSON.stringify(ZZEMRALERTValue);
+        let body = JSON.stringify(query);
         let method = 'POST';
         // Make the POST request to update the ZZEMRALERT value
         const response = await fetch(url, {
@@ -138,10 +137,14 @@ async function fetchData(listId, comapnyObject, queryObj) {
                     if (ZZEMRALERT && ZZEMRALERT.value === "false") {
                         alert(`New Emergency Received Service Order #${scall.code}, Work Center: ${rr.code.substring(8)}, Premise: ${premise}`);
                         ZZEMRALERT.value = true;
-                        await postUpdatedZZEMRALERTValue(true, comapnyObject);
+                        await postUpdatedZZEMRALERTValue(true, comapnyObject,{ "query": "select rr.id,rr.code, act.id,act.udf.ZZEMRALERT , act.startDateTime, act.code, act.timeZoneId, scall.code, scall.subject, scall.createDateTime, add.location, eq.id as equipment_id from ServiceCall scall INNER JOIN Activity act ON act.object.objectId = scall.id INNER JOIN Address add ON add.id = act.address INNER JOIN Region rr ON rr.id = act.region INNER JOIN Equipment eq ON eq.id = act.equipment WHERE scall.priority = 'HIGH' AND scall.typeCode = 'GEMR' AND act.status = 'DRAFT' AND act.executionStage = 'DISPATCHING'"});
                    }
                 }
             });
+            // Dismiss alert after 2 seconds
+            setTimeout(() => {
+                alert.dismiss();
+            }, 2000);
         }
         return true
     } catch (error) {
