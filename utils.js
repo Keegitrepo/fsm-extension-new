@@ -97,7 +97,7 @@ async function fetchData(listId, comapnyObject, queryObj) {
         if (listId === 'emergencyList' && jsonResponse.data && jsonResponse.data.length > 0){
             jsonResponse.data.forEach(data => {
                 let { act } = data;
-                if (act && act.udfValues && Array.isArray(act.udfValues)){
+                if (act && Array.isArray(act.udfValues)){
                 let ZZEMRALERT = act.udfValues.find(udf => udf.name === "ZZEMRALERT");
                     if (ZZEMRALERT && ZZEMRALERT.value === "false") {
                         alert('ZZEMRALERT is false!');
