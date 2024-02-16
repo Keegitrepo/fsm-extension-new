@@ -96,11 +96,12 @@ async function fetchData(listId, comapnyObject, queryObj) {
         createMapUrlAndAddItemToList(listId, jsonResponse, cloudHost);
         if (listId === 'emergencyList' && jsonResponse.data && jsonResponse.data.length > 0){
             jsonResponse.data.forEach(data => {
-                let { act } = data;
+                let {scall, rr, act, equipment_id } = data;
+                let premise = equipment_id ? "Dispatcher Area" : "Off-Premise";
                 if (act && Array.isArray(act.udfValues)){
                 let ZZEMRALERT = act.udfValues.find(udf => udf.name === "ZZEMRALERT");
                     if (ZZEMRALERT && ZZEMRALERT.value === "false") {
-                        alert('ZZEMRALERT is false!');
+                        alert(`New Emergency Received Service Order #${scall.code}, Work Center: ${rr.code.substring(8)}, Premise: ${premise}`);
                         ZZEMRALERT.value = true;
                    }
                 }
