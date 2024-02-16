@@ -69,8 +69,7 @@ async function postUpdatedZZEMRALERTValue(ZZEMRALERTValue,comapnyObject) {
         // Handle the response if needed
         const responseData = await response.json();
         console.log('Updated ZZEMRALERT value:', responseData);
-
-        // You can perform any further actions based on the response
+        return true;
     } catch (error) {
         console.error('Error updating ZZEMRALERT value:', error.message);
         // Handle errors appropriately, such as displaying an error message
@@ -131,7 +130,7 @@ async function fetchData(listId, comapnyObject, queryObj) {
         document.getElementById(listId).innerHTML = '';
         createMapUrlAndAddItemToList(listId, jsonResponse, cloudHost);
         if (listId === 'emergencyList' && jsonResponse.data && jsonResponse.data.length > 0){
-            jsonResponse.data.forEach(data => {
+            jsonResponse.data.forEach(async data => {
                 let {scall, rr, act, equipment_id } = data;
                 let premise = equipment_id ? "Dispatcher Area" : "Off-Premise";
                 if (act && Array.isArray(act.udfValues)){
@@ -139,7 +138,7 @@ async function fetchData(listId, comapnyObject, queryObj) {
                     if (ZZEMRALERT && ZZEMRALERT.value === "false") {
                         alert(`New Emergency Received Service Order #${scall.code}, Work Center: ${rr.code.substring(8)}, Premise: ${premise}`);
                         ZZEMRALERT.value = true;
-                        postUpdatedZZEMRALERTValue(true, comapnyObject);
+                        await postUpdatedZZEMRALERTValue(true, comapnyObject);
                    }
                 }
             });
