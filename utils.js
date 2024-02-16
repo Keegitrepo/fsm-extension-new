@@ -142,9 +142,6 @@ async function fetchData(listId, comapnyObject, queryObj) {
                    }
                 }
             });
-            setTimeout(() => {
-                alert();
-            }, 2000);
         }
         return true
     } catch (error) {
