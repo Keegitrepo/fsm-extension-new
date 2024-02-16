@@ -39,7 +39,43 @@ function isInsideShell(FSMShell) {
         });
     }
 }
+async function postUpdatedZZEMRALERTValue(ZZEMRALERTValue,comapnyObject) {
+    try {
+        // Construct the request body with the updated ZZEMRALERT value
+        const { cloudHost, account, company, accountId, companyId } = comapnyObject;
+        const header = {
+            "Content-Type": "application/json",
+            "X-Client-ID": "000179c6-c140-44ec-b48e-b447949fd5c9",
+            "X-Client-Version": "1.0",
+            "Authorization": `bearer ${sessionStorage.getItem('token')}`,
+            "X-Account-ID": accountId,
+            "X-Company-ID": companyId
+        };
+        let url = `https://${cloudHost}/api/query/v1?account=${account}&company=${company}&dtos=Activity.43;ServiceCall.27;Address.22;Region.9;Equipment.24`
+        let body = JSON.stringify(ZZEMRALERTValue);
+        let method = 'POST';
+        // Make the POST request to update the ZZEMRALERT value
+        const response = await fetch(url, {
+            method: method,
+            headers: header,
+            body: body
+        });
 
+        // Check if the request was successful
+        if (!response.ok) {
+            throw new Error('Failed to update ZZEMRALERT value');
+        }
+
+        // Handle the response if needed
+        const responseData = await response.json();
+        console.log('Updated ZZEMRALERT value:', responseData);
+
+        // You can perform any further actions based on the response
+    } catch (error) {
+        console.error('Error updating ZZEMRALERT value:', error.message);
+        // Handle errors appropriately, such as displaying an error message
+    }
+}
 // Loop before a token expire to fetch a new one
 async function initializeRefreshTokenStrategy(shellSdk, SHELL_EVENTS, auth, comapnyObject) {
     shellSdk.on(SHELL_EVENTS.Version1.REQUIRE_AUTHENTICATION, (event) => {
@@ -103,6 +139,7 @@ async function fetchData(listId, comapnyObject, queryObj) {
                     if (ZZEMRALERT && ZZEMRALERT.value === "false") {
                         alert(`New Emergency Received Service Order #${scall.code}, Work Center: ${rr.code.substring(8)}, Premise: ${premise}`);
                         ZZEMRALERT.value = true;
+                        postUpdatedZZEMRALERTValue(true, comapnyObject);
                    }
                 }
             });
