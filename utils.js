@@ -143,7 +143,7 @@ async function fetchData(listId, comapnyObject, queryObj) {
                 }
             });
             setTimeout(() => {
-                alert.dismiss();
+                alert();
             }, 2000);
         }
         return true
