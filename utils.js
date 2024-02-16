@@ -97,10 +97,12 @@ async function fetchData(listId, comapnyObject, queryObj) {
         if (listId === 'emergencyList' && jsonResponse.data && jsonResponse.data.length > 0){
             jsonResponse.data.forEach(data => {
                 let { act } = data;
-                if (act && act.udf && act.udf.ZZEMRALERT === false) {
-                    // Show alert and set ZZEMRALERT to true
-                    alert('ZZEMRALERT is false!'); // You may want to improve this alert
-                    act.udf.ZZEMRALERT = true; // Set ZZEMRALERT to true
+                if (act && act.udfValues && Array.isArray(act.udfValues)){
+                let ZZEMRALERT = act.udfValues.find(udf => udf.name === "ZZEMRALERT");
+                    if (ZZEMRALERT && ZZEMRALERT.value === "false") {
+                        alert('ZZEMRALERT is false!');
+                        ZZEMRALERT.value = true;
+                   }
                 }
             });
             setTimeout(() => {
