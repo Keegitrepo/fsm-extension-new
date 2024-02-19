@@ -39,9 +39,9 @@ function isInsideShell(FSMShell) {
         });
     }
 }
-async function postUpdatedZZEMRALERTValue(ZZEMRALERTValue,comapnyObject, patchRequestBody) {
+async function postUpdatedZZEMRALERTValue(comapnyObject, patchRequestBody, act) {
     try {
-        const { cloudHost, account, company, accountId, companyId } = comapnyObject;
+        const { cloudHost, accountId, companyId } = comapnyObject;
         const header = {
             "Content-Type": "application/json",
             "X-Client-ID": "000179c6-c140-44ec-b48e-b447949fd5c9",
@@ -50,7 +50,7 @@ async function postUpdatedZZEMRALERTValue(ZZEMRALERTValue,comapnyObject, patchRe
             "X-Account-ID": accountId,
             "X-Company-ID": companyId
         };
-        let url = `https://${cloudHost}/api/data/v4/Activity/externalId/${patchRequestBody.udfValues[0].meta.externalId}?dtos=Activity.43`;
+        let url = `https://${cloudHost}/api/data/v4/Activity/externalId/${act.externalId}?dtos=Activity.43`;
         let body = JSON.stringify(patchRequestBody);
         let method = 'PATCH';
         // Make the POST request to update the ZZEMRALERT value
@@ -142,14 +142,13 @@ async function fetchData(listId, comapnyObject, queryObj) {
                             "udfValues": [
                                 {
                                     "meta": {
-                                        "externalId": act.externalId // Assuming this is the externalId for the ZZEMRALERT field
+                                        "externalId": "ZZEMRALERT"
                                     },
-                                    "name": "ZZEMRALERT",
                                     "value": true
                                 }
                             ]
                         };
-                        await postUpdatedZZEMRALERTValue(true, comapnyObject, patchRequestBody);
+                        await postUpdatedZZEMRALERTValue(comapnyObject, patchRequestBody, act);
                    }
                 }
             });
