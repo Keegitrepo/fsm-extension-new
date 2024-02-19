@@ -136,7 +136,6 @@ async function fetchData(listId, comapnyObject, queryObj) {
                 let ZZEMRALERT = act.udfValues.find(udf => udf.name === "ZZEMRALERT");
                     if (ZZEMRALERT && ZZEMRALERT.value === "false") {
                         alert(`New Emergency Received Service Order #${scall.code}, Work Center: ${rr.code.substring(8)}, Premise: ${premise}`);
-                        act.udfValues[0].value = true;
                         //Construct the PATCH request body
                         let patchRequestBody = {
                             "udfValues": [
