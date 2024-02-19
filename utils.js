@@ -50,7 +50,7 @@ async function postUpdatedZZEMRALERTValue(ZZEMRALERTValue,comapnyObject, patchRe
             "X-Account-ID": accountId,
             "X-Company-ID": companyId
         };
-        let url = `https://${cloudHost}/api/data/v4/Activity/externalId/${patchRequestBody.externalId}?dtos=Activity.43`;
+        let url = `https://${cloudHost}/api/data/v4/Activity/externalId/${patchRequestBody.udfValues}?dtos=Activity.43`;
         let body = JSON.stringify(patchRequestBody);
         let method = 'PATCH';
         // Make the POST request to update the ZZEMRALERT value
