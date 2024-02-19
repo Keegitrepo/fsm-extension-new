@@ -50,7 +50,7 @@ async function postUpdatedZZEMRALERTValue(ZZEMRALERTValue,comapnyObject, patchRe
             "X-Account-ID": accountId,
             "X-Company-ID": companyId
         };
-        let url = `https://${cloudHost}/api/data/v4/Activity/externalId/${patchRequestBody.udfValues[0].meta.externalId}?dtos=Activity.43`;
+        let url = `https://${cloudHost}/api/data/v4/Activity/externalId/${act.externalId}?dtos=Activity.43`;
         let body = JSON.stringify(patchRequestBody);
         let method = 'PATCH';
         // Make the POST request to update the ZZEMRALERT value
@@ -139,11 +139,12 @@ async function fetchData(listId, comapnyObject, queryObj) {
                         act.udfValues[0].value = true;
                         //Construct the PATCH request body
                         let patchRequestBody = {
-                            "udfValues":[
+                            "udfValues": [
                                 {
-                                    "meta":{
-                                        "externalId": "8D856BBC24C545718BF1A5E7EF642A89"
+                                    "meta": {
+                                        "externalId": act.externalId // Assuming this is the externalId for the ZZEMRALERT field
                                     },
+                                    "name": "ZZEMRALERT",
                                     "value": true
                                 }
                             ]
