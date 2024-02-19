@@ -90,7 +90,7 @@ async function initializeRefreshTokenStrategy(shellSdk, SHELL_EVENTS, auth, coma
     sessionStorage.setItem('token', auth.access_token);
     setTimeout(() => fetchToken(), (auth.expires_in * 1000) - 10000);
 
-    await fetchData('emergencyList', comapnyObject, { "query": "select rr.id,rr.code, act.id,act.udf.ZZEMRALERT , act.startDateTime, act.code, act.timeZoneId, scall.code, scall.subject, scall.createDateTime, add.location, eq.id as equipment_id from ServiceCall scall INNER JOIN Activity act ON act.object.objectId = scall.id INNER JOIN Address add ON add.id = act.address INNER JOIN Region rr ON rr.id = act.region INNER JOIN Equipment eq ON eq.id = act.equipment WHERE scall.priority = 'HIGH' AND scall.typeCode = 'GEMR' AND act.status = 'DRAFT' AND act.executionStage = 'DISPATCHING'"}); // For Emergency orders
+    await fetchData('emergencyList', comapnyObject, { "query": "select rr.id,rr.code, act.id, act.externalId, act.udf.ZZEMRALERT , act.startDateTime, act.code, act.timeZoneId, scall.code, scall.subject, scall.createDateTime, add.location, eq.id as equipment_id from ServiceCall scall INNER JOIN Activity act ON act.object.objectId = scall.id INNER JOIN Address add ON add.id = act.address INNER JOIN Region rr ON rr.id = act.region INNER JOIN Equipment eq ON eq.id = act.equipment WHERE scall.priority = 'HIGH' AND scall.typeCode = 'GEMR' AND act.status = 'DRAFT' AND act.executionStage = 'DISPATCHING'"}); // For Emergency orders
     await fetchData('sameDayList', comapnyObject, { "query": "select act.id, act.createDateTime, act.code, scall.code, scall.subject, add.location, add.location from ServiceCall scall INNER JOIN Activity act ON act.object.objectId = scall.id INNER JOIN Address add ON add.id = act.address WHERE scall.priority = 'HIGH' AND scall.typeCode != 'GEMR' AND act.status = 'DRAFT' AND act.executionStage = 'DISPATCHING'"}); // For Same day orders
 }
 let previousEmergencyCount = 0;
@@ -142,7 +142,7 @@ async function fetchData(listId, comapnyObject, queryObj) {
                             "udfValues":[
                                 {
                                     "meta":{
-                                        "externalId": "UDFMetaExtId"
+                                        "externalId": "8D856BBC24C545718BF1A5E7EF642A89"
                                     },
                                     "value": true
                                 }
@@ -171,7 +171,7 @@ async function fetchData(listId, comapnyObject, queryObj) {
 
         shellReferenceObject.shellSdk.on(shellReferenceObject["SHELL_EVENTS"].Version1.REQUIRE_AUTHENTICATION, async (event) => {
             sessionStorage.setItem('token', event.access_token);
-            await fetchData('emergencyList', comapnyObject, { "query": "select rr.id,rr.code, act.id,act.udf.ZZEMRALERT , act.startDateTime, act.code, act.timeZoneId, scall.code, scall.subject, scall.createDateTime, add.location, eq.id as equipment_id from ServiceCall scall INNER JOIN Activity act ON act.object.objectId = scall.id INNER JOIN Address add ON add.id = act.address INNER JOIN Region rr ON rr.id = act.region INNER JOIN Equipment eq ON eq.id = act.equipment WHERE scall.priority = 'HIGH' AND scall.typeCode = 'GEMR' AND act.status = 'DRAFT' AND act.executionStage = 'DISPATCHING'"}); // For Emergency orders
+            await fetchData('emergencyList', comapnyObject, { "query": "select rr.id,rr.code, act.id,act.udf.ZZEMRALERT , act.externalId , act.startDateTime, act.code, act.timeZoneId, scall.code, scall.subject, scall.createDateTime, add.location, eq.id as equipment_id from ServiceCall scall INNER JOIN Activity act ON act.object.objectId = scall.id INNER JOIN Address add ON add.id = act.address INNER JOIN Region rr ON rr.id = act.region INNER JOIN Equipment eq ON eq.id = act.equipment WHERE scall.priority = 'HIGH' AND scall.typeCode = 'GEMR' AND act.status = 'DRAFT' AND act.executionStage = 'DISPATCHING'"}); // For Emergency orders
             await fetchData('sameDayList', comapnyObject, { "query": "select act.id, act.createDateTime, act.code, scall.code, scall.subject, add.location, add.location from ServiceCall scall INNER JOIN Activity act ON act.object.objectId = scall.id INNER JOIN Address add ON add.id = act.address WHERE scall.priority = 'HIGH' AND scall.typeCode != 'GEMR' AND act.status = 'DRAFT' AND act.executionStage = 'DISPATCHING'"}); // For Same day orders
         });
 
