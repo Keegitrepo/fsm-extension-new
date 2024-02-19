@@ -139,7 +139,14 @@ async function fetchData(listId, comapnyObject, queryObj) {
                         act.udfValues[0].value = true;
                         //Construct the PATCH request body
                         let patchRequestBody = {
-                            "udfValues": act.udfValues
+                            "udfValues":[
+                                {
+                                    "meta":{
+                                        "externalId": "UDFMetaExtId"
+                                    },
+                                    "value": true
+                                }
+                            ]
                         };
                         await postUpdatedZZEMRALERTValue(true, comapnyObject, patchRequestBody);
                    }
