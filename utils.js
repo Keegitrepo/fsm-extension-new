@@ -39,7 +39,41 @@ function isInsideShell(FSMShell) {
         });
     }
 }
+async function postUpdatedZZEMRALERTValue(comapnyObject, patchRequestBody, act) {
+    try {
+        const { cloudHost, accountId, companyId } = comapnyObject;
+        const header = {
+            "Content-Type": "application/json",
+            "X-Client-ID": "000179c6-c140-44ec-b48e-b447949fd5c9",
+            "X-Client-Version": "1.0",
+            "Authorization": `bearer ${sessionStorage.getItem('token')}`,
+            "X-Account-ID": accountId,
+            "X-Company-ID": companyId
+        };
+        let url = `https://${cloudHost}/api/data/v4/Activity/externalId/${act.externalId}?dtos=Activity.43&forceUpdate=true`;
+        let body = JSON.stringify(patchRequestBody);
+        let method = 'PATCH';
+        // Make the POST request to update the ZZEMRALERT value
+        const response = await fetch(url, {
+            method: method,
+            headers: header,
+            body: body
+        });
 
+        // Check if the request was successful
+        if (!response.ok) {
+            throw new Error('Failed to update ZZEMRALERT value');
+        }
+
+        // Handle the response if needed
+        const responseData = await response.json();
+        console.log('Updated ZZEMRALERT value:', responseData);
+        return true;
+    } catch (error) {
+        console.error('Error updating ZZEMRALERT value:', error.message);
+        // Handle errors appropriately, such as displaying an error message
+    }
+}
 // Loop before a token expire to fetch a new one
 async function initializeRefreshTokenStrategy(shellSdk, SHELL_EVENTS, auth, comapnyObject) {
     shellSdk.on(SHELL_EVENTS.Version1.REQUIRE_AUTHENTICATION, (event) => {
@@ -56,10 +90,10 @@ async function initializeRefreshTokenStrategy(shellSdk, SHELL_EVENTS, auth, coma
     sessionStorage.setItem('token', auth.access_token);
     setTimeout(() => fetchToken(), (auth.expires_in * 1000) - 10000);
 
-    await fetchData('emergencyList', comapnyObject, { "query": "select act.id, act.createDateTime, act.code, scall.code, scall.subject, add.location, add.location from ServiceCall scall INNER JOIN Activity act ON act.object.objectId = scall.id INNER JOIN Address add ON add.id = act.address WHERE scall.priority = 'HIGH' AND scall.typeCode = 'GEMR' AND act.status = 'DRAFT' AND act.executionStage = 'DISPATCHING'"}); // For Emergency orders
+    await fetchData('emergencyList', comapnyObject, { "query": "select rr.id,rr.code, act.id, act.externalId, act.udf.ZZEMRALERT , act.startDateTime, act.code, act.timeZoneId, scall.code, scall.subject, scall.createDateTime, add.location, eq.id as equipment_id from ServiceCall scall INNER JOIN Activity act ON act.object.objectId = scall.id INNER JOIN Address add ON add.id = act.address INNER JOIN Region rr ON rr.id = act.region INNER JOIN Equipment eq ON eq.id = act.equipment WHERE scall.priority = 'HIGH' AND scall.typeCode = 'GEMR' AND act.status = 'DRAFT' AND act.executionStage = 'DISPATCHING'"}); // For Emergency orders
     await fetchData('sameDayList', comapnyObject, { "query": "select act.id, act.createDateTime, act.code, scall.code, scall.subject, add.location, add.location from ServiceCall scall INNER JOIN Activity act ON act.object.objectId = scall.id INNER JOIN Address add ON add.id = act.address WHERE scall.priority = 'HIGH' AND scall.typeCode != 'GEMR' AND act.status = 'DRAFT' AND act.executionStage = 'DISPATCHING'"}); // For Same day orders
 }
-
+let previousEmergencyCount = 0;
 async function fetchData(listId, comapnyObject, queryObj) {
     // Next call for loading the data asynchronously time to time
     let inputValue = document.getElementById("inputId") ? document.getElementById("inputId").value : 10; // i.e default value
@@ -79,7 +113,7 @@ async function fetchData(listId, comapnyObject, queryObj) {
         "X-Account-ID": accountId,
         "X-Company-ID": companyId
     };
-    let url = `https://${cloudHost}/api/query/v1?account=${account}&company=${company}&dtos=Activity.43;ServiceCall.27;Address.22`
+    let url = `https://${cloudHost}/api/query/v1?account=${account}&company=${company}&dtos=Activity.43;ServiceCall.27;Address.22;Region.9;Equipment.24`
     let body = JSON.stringify(queryObj);
     let method = 'POST';
 
@@ -94,6 +128,34 @@ async function fetchData(listId, comapnyObject, queryObj) {
         let jsonResponse = await response.json();
         document.getElementById(listId).innerHTML = '';
         createMapUrlAndAddItemToList(listId, jsonResponse, cloudHost);
+        if (listId === 'emergencyList' && jsonResponse.data && jsonResponse.data.length > 0){
+            jsonResponse.data.forEach(async data => {
+                let {scall, rr, act, equipment_id } = data;
+                let premise = equipment_id ? "Dispatcher Area" : "Off-Premise";
+                if (act && Array.isArray(act.udfValues)){
+                let ZZEMRALERT = act.udfValues.find(udf => udf.name === "ZZEMRALERT");
+                    if (ZZEMRALERT && ZZEMRALERT.value === "false") {
+                        alert(`New Emergency Received Service Order #${scall.code}, Work Center: ${rr.code.substring(8)}, Premise: ${premise}`);
+                        //Construct the PATCH request body
+                        let patchRequestBody = {
+                            "udfValues": [
+                                {
+                                    "meta": {
+                                        "externalId": "ZZEMRALERT"
+                                    },
+                                    "value": true
+                                }
+                            ]
+                        };
+                        await postUpdatedZZEMRALERTValue(comapnyObject, patchRequestBody, act);
+                   }
+                }
+            });
+            // Dismiss alert after 2 seconds
+            setTimeout(() => {
+                alert.dismiss();
+            }, 2000);
+        }
         return true
     } catch (error) {
         document.getElementById('emergencyList').innerHTML = '';
@@ -108,7 +170,7 @@ async function fetchData(listId, comapnyObject, queryObj) {
 
         shellReferenceObject.shellSdk.on(shellReferenceObject["SHELL_EVENTS"].Version1.REQUIRE_AUTHENTICATION, async (event) => {
             sessionStorage.setItem('token', event.access_token);
-            await fetchData('emergencyList', comapnyObject, { "query": "select act.id, act.createDateTime, act.code, scall.code, scall.subject, add.location, add.location from ServiceCall scall INNER JOIN Activity act ON act.object.objectId = scall.id INNER JOIN Address add ON add.id = act.address WHERE scall.priority = 'HIGH' AND scall.typeCode = 'GEMR' AND act.status = 'DRAFT' AND act.executionStage = 'DISPATCHING'"}); // For Emergency orders
+            await fetchData('emergencyList', comapnyObject, { "query": "select rr.id,rr.code, act.id,act.udf.ZZEMRALERT , act.externalId , act.startDateTime, act.code, act.timeZoneId, scall.code, scall.subject, scall.createDateTime, add.location, eq.id as equipment_id from ServiceCall scall INNER JOIN Activity act ON act.object.objectId = scall.id INNER JOIN Address add ON add.id = act.address INNER JOIN Region rr ON rr.id = act.region INNER JOIN Equipment eq ON eq.id = act.equipment WHERE scall.priority = 'HIGH' AND scall.typeCode = 'GEMR' AND act.status = 'DRAFT' AND act.executionStage = 'DISPATCHING'"}); // For Emergency orders
             await fetchData('sameDayList', comapnyObject, { "query": "select act.id, act.createDateTime, act.code, scall.code, scall.subject, add.location, add.location from ServiceCall scall INNER JOIN Activity act ON act.object.objectId = scall.id INNER JOIN Address add ON add.id = act.address WHERE scall.priority = 'HIGH' AND scall.typeCode != 'GEMR' AND act.status = 'DRAFT' AND act.executionStage = 'DISPATCHING'"}); // For Same day orders
         });
 
