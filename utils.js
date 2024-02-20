@@ -151,10 +151,6 @@ async function fetchData(listId, comapnyObject, queryObj) {
                    }
                 }
             });
-            // Dismiss alert after 2 seconds
-            setTimeout(() => {
-                alert.dismiss();
-            }, 2000);
         }
         return true
     } catch (error) {
